@@ -18,15 +18,18 @@ Alternatively, you can install it as a plugin.
 
   rails plugin install git://github.com/spanner/osgb.git
 
+==Status
+
+Early days: activerecord interface hasn't settled down, some refactoring likely, bugs entirely possible. The basic algorithms are ancient and sound, though.
+
 == Usage
 
 You don't need to make any explicit reference to the gem. It adds conversion methods to the String class:
 
-    "SD12341234".is_gridref?                # -> true
-    "SD12341234".to_latlng                  # -> 
-    "SD12341234".to_WGS84                   # -> 
+    "SD28687846".is_gridref?                # -> true
+    "SD28687846".to_latlng                  # -> [54.196763, -3.093320]
+    "SD28687846".to_wgs84                   # -> [54.196915, -3.094684]
     "1.056789, 55.98978607".is_latlng?      # -> true
-    "1.056789, 55.98978607".to_gridref      # -> true
 
 and provides some help for your ActiveRecord classes:
 
@@ -39,13 +42,12 @@ and provides some help for your ActiveRecord classes:
 
 The :lat, :lng and :gridref keys should pass in the names of the relevant columns if they don't match these defaults. 
 
-== Questions or Problems?
+## Bugs and features
 
-If you have any issues with CanCan which you cannot find the solution to in the documentation[https://github.com/ryanb/cancan/wiki], please add an {issue on GitHub}[https://github.com/ryanb/cancan/issues] or fork the project and send a pull request.
+[Github issues](http://github.com/spanner/osgb/issues) please, or for little things an email or github message is fine.
 
-To get the specs running you should call +bundle+ and then +rake+. See the {spec/README}[https://github.com/ryanb/cancan/blob/master/spec/README.rdoc] for more information.
+## Author & Copyright
 
+Copyright 2008-2011 Will at spanner.org.
 
-== Special Thanks
-
-CanCan was inspired by declarative_authorization[https://github.com/stffn/declarative_authorization/] and aegis[https://github.com/makandra/aegis]. Also many thanks to the CanCan contributors[https://github.com/ryanb/cancan/contributors]. See the CHANGELOG[https://github.com/ryanb/cancan/blob/master/CHANGELOG.rdoc] for the full list.
+Released under the same terms as Ruby
