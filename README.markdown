@@ -1,10 +1,10 @@
-= OSGB
+# OSGB
 
 Wiki[https://github.com/spanner/osgb/wiki] RDocs[http://rdoc.info/projects/spanner/osgb]
 
 Osgb is a library that converts between British (and Irish) grid references and latitude and longitude co-ordinates. It is precise to about 5m, which is to say it's good enough for WGS84 and most GPS use but not local enough for surveying to ETRS89.
 
-== Installation
+## Installation
 
 In <b>Rails 3</b>, add this to your Gemfile and run +bundle install+.
 
@@ -18,11 +18,11 @@ Alternatively, you can install it as a plugin.
 
   rails plugin install git://github.com/spanner/osgb.git
 
-==Status
+## Status
 
 Early days: activerecord interface hasn't settled down, some refactoring likely, bugs entirely possible. The basic algorithms are ancient and sound, though.
 
-== Usage
+## Usage
 
 You don't need to make any explicit reference to the gem. It adds conversion methods to the String class:
 
