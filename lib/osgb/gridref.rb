@@ -94,7 +94,7 @@ module Osgb
     end
   
     def to_latlng
-      "#{lat}, #{lng}"
+      [lat, lng]
     end
 
     def coordinates

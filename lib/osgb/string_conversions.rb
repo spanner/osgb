@@ -9,13 +9,13 @@ class String
 
   def coordinates
     if matches = self.match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/)
-      matches[1,2].join(', ')
+      matches[1,2]
     else
       nil
     end
   end
   
-  def to_latlng(options = {})
+  def to_latlng(options={})
     if is_gridref?
       Osgb::Gridref.new(self, options).to_latlng
     else
@@ -23,7 +23,7 @@ class String
     end
   end
   
-  def to_wgs84(options = {})
+  def to_wgs84(options={})
     if is_gridref?
       Osgb::Gridref.new(self, options.merge(:datum => :wgs84)).to_latlng
     else
@@ -31,4 +31,11 @@ class String
     end
   end
   
+  def lat(options={})
+    to_latlng({:datum => :wgs84}.merge(options))[0]
+  end
+  
+  def lng(options={})
+    to_latlng({:datum => :wgs84}.merge(options))[1]
+  end  
 end
