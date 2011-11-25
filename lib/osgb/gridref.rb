@@ -4,22 +4,29 @@ module Osgb
   # with help from CPAN module Geography::NationalGrid by and (c) P Kent
 
   class Gridref
-    OsTiles = {
+    
+    # maps OS letter codes onto their coordinates in the master grid
+    OS_TILES = {
       :a => [0,4], :b => [1,4], :c => [2,4], :d => [3,4], :e => [4,4],
       :f => [0,3], :g => [1,3], :h => [2,3], :j => [3,3], :k => [4,3],
       :l => [0,2], :m => [1,2], :n => [2,2], :o => [3,2], :p => [4,2],
       :q => [0,1], :r => [1,1], :s => [2,1], :t => [3,1], :u => [4,1],
       :v => [0,0], :w => [1,0], :x => [2,0], :y => [3,0], :z => [4,0],
     }
-    FalseOrigin = {:e => 2, :n => 1}
-    SquareSize = [nil, 10000, 1000, 100, 10, 1]    # shorter grid ref = larger square.
+    
+    # the offset makes all coordinates positive and <1000km
+    FALSE_ORIGIN = {:e => 2, :n => 1}
+    
+    # a shorter grid ref denotes a larger square
+    SQUARE_SIZE = [nil, 10000, 1000, 100, 10, 1]    
 
-    attr_accessor :gridref, :projection, :ellipsoid, :datum, :options, :precision
+    attr_accessor :gridref, :projection, :ellipsoid, :options, :precision
 
+    @@default_datum = :osgb36
     @@iteration_ceiling = 1000
     @@defaults = {
       :projection => :gb,   # mercator projection of input gridref. Can be any projection name: usually :ie or :gb
-      :precision => 6       # decimal places in the output lat/long
+      :precision => 6,      # decimal places in the output lat/long
     }
     
     class << self
@@ -27,7 +34,7 @@ module Osgb
         @@iteration_ceiling
       end
     end
-  
+
     def initialize(string, options={})
       raise ArgumentError, "invalid grid reference string '#{string}'." unless string.is_gridref?
       options = @@defaults.merge(options)
@@ -48,16 +55,16 @@ module Osgb
     end
   
     def resolution
-      digits.length / 2
+      @resolution ||= digits.length / 2
     end
   
     def offsets
       if tile
-        major = OsTiles[tile[0,1].downcase.to_sym ]
-        minor = OsTiles[tile[1,1].downcase.to_sym]
+        major = OS_TILES[tile[0,1].downcase.to_sym ]
+        minor = OS_TILES[tile[1,1].downcase.to_sym]
         @offset ||= {
-          :e => (500000 * (major[0] - FalseOrigin[:e])) + (100000 * minor[0]),
-          :n => (500000 * (major[1] - FalseOrigin[:n])) + (100000 * minor[1])
+          :e => (500000 * (major[0] - FALSE_ORIGIN[:e])) + (100000 * minor[0]),
+          :n => (500000 * (major[1] - FALSE_ORIGIN[:n])) + (100000 * minor[1])
         }
       else
         { :e => 0, :n => 0 }
@@ -65,40 +72,40 @@ module Osgb
     end
   
     def easting
-      @east ||= offsets[:e] + digits[0, resolution].to_i * SquareSize[resolution]
+      @east ||= offsets[:e] + digits[0, resolution].to_i * SQUARE_SIZE[resolution]
     end
   
     def northing
-      @north ||= offsets[:n] + digits[resolution, resolution].to_i * SquareSize[resolution]
+      @north ||= offsets[:n] + digits[resolution, resolution].to_i * SQUARE_SIZE[resolution]
     end
   
-    def lat
-      round(coordinates[:lat].to_degrees)
+    def lat(datum=nil)
+      to_latlng(datum).lat
     end
   
-    def lng
-      round(coordinates[:lng].to_degrees)
-    end
-    
-    def round(value)
-      if value.method(:round).arity == 0
-        multiplier = 10**precision
-        (value * multiplier).round.to_f / multiplier
-      else
-        value.round(precision)
-      end
+    def lng(datum=nil)
+      to_latlng(datum).lng
     end
   
     def to_s
       gridref.to_s
     end
   
-    def to_latlng
-      [lat, lng]
+    # Returns an Osgb::Point corresponding to this grid reference and lying on the specified datum.
+    # We default to WGS84 since that is the representation most likely to be useful.
+    #
+    def to_latlng(datum=nil)
+      datum ||= :wgs84
+      point.transform_to(datum)
     end
 
-    def coordinates
-      unless @coordinates
+  private
+
+    # Returns an Osgb::Point corresponding to this grid reference. Since it is not yet transformed,
+    # the point will lie on the native OSGB36 datum. 
+    #
+    def point
+      unless @point
         # variable names correspond roughly to symbols in the OS algorithm, lowercased:
         # n0 = northing of true origin 
         # e0 = easting of true origin 
@@ -168,27 +175,10 @@ module Osgb
         phi = phi - vii*(d**2) + viii*(d**4) - ix*(d**6)
         lambda = l0 + x*d - xi*(d**3) + xii*(d**5) - xiia*(d**7)
 
-        # phi and lambda are lat and long but note that here we are still in radians and osgb36
-        # if a different output datum is required, the helmert transformation remaps the coordinates onto a new globe
-
-        if datum && datum != :osgb36
-          target_ellipsoid = Osgb::Ellipsoid[datum]
-          
-          if helmert = Osgb::Helmert[datum]
-            cartesian_coordinates = ellipsoid.polar_to_cartesian(phi, lambda)
-            transformed = helmert.transform(*cartesian_coordinates)
-            phi, lambda = target_ellipsoid.cartesian_to_polar(*transformed)
-          else
-            raise RuntimeError, "Missing ellipsoid or helmert transformation for #{datum}"
-          end
-        end
-
-        @coordinates = {:lat => phi, :lng => lambda}
+        @point = Osgb::Point.new(phi.to_degrees, lambda.to_degrees, :osgb36, precision)
       end
-      @coordinates
+      @point
     end
-    
-  private
 
     def sec(radians)
       1 / Math.cos(radians)

@@ -2,6 +2,7 @@ require 'osgb/angle_conversions'              # converts degrees to radians and 
 require 'osgb/ellipsoid'                      # standard approximations to the squashed-circle shape of the earth
 require 'osgb/projection'                     # the geometrical distortions required by a map projection
 require 'osgb/helmert'                        # 3d transformation algorithm for mapping between cartesian and ellipsoidal polar coordinates
+require 'osgb/point'                          # versatile coordinate pair
 require 'osgb/gridref'                        # parse grid references and returns lat/long pairs
 require 'osgb/string_conversions'             # add conversion methods to String
 require 'osgb/railtie' if defined? Rails      # add useful methods to ActiveRecord
@@ -21,6 +22,14 @@ Osgb::Projection.new :utm29, :scale => 0.9996, :phi0 => 0, :lambda0 => -9, :e0 =
 Osgb::Projection.new :utm30, :scale => 0.9996, :phi0 => 0, :lambda0 => -3, :e0 => 500000, :n0 => 0, :ellipsoid => :utm
 Osgb::Projection.new :utm31, :scale => 0.9996, :phi0 => 0, :lambda0 => 3, :e0 => 500000, :n0 => 0, :ellipsoid => :utm
 
-# the Helmert matrix used to translate to wgs84.
+# the Helmert matrices used to translate from osgb36 to wgs84 and vice versa
 
-Osgb::Helmert.new :wgs84, :tx => 446.448, :ty => -125.157, :tz => 542.060, :rx => 0.1502, :ry => 0.2470, :rz => 0.8421, :s => -20.4894
+Osgb::Helmert.new :osgb36_to_wgs84, :tx => 446.448, :ty => -125.157, :tz => 542.060, :rx => 0.1502, :ry => 0.2470, :rz => 0.8421, :s => -20.4894
+Osgb::Helmert.new :wgs84_to_osgb36, :tx => -446.448, :ty => 125.157, :tz => -542.060, :rx => -0.1502, :ry => -0.2470, :rz => -0.8421, :s => 20.4894
+
+# Housekeeping
+
+module Osgb
+  class TransformationError < StandardError; end
+  class ConfigurationError < StandardError; end
+end

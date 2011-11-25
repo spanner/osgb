@@ -25,7 +25,7 @@ module Osgb
       zp = tz - x*ry + y*rx + z*s1
       [xp, yp, zp]
     end
-  
+    
     def self.[](name)
       @@instances[name]
     end

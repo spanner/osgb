@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "osgb"
-  s.version     = "0.2.0"
+  s.version     = "0.3.0"
   s.author      = "William Ross"
   s.email       = "will@spanner.org"
   s.homepage    = "http://github.com/spanner/osgb"
