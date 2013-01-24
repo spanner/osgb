@@ -4,6 +4,7 @@ require 'osgb/projection'                     # the geometrical distortions requ
 require 'osgb/helmert'                        # 3d transformation algorithm for mapping between cartesian and ellipsoidal polar coordinates
 require 'osgb/point'                          # versatile coordinate pair
 require 'osgb/gridref'                        # parse grid references and returns lat/long pairs
+require 'osgb/has_gridref'                    # ActiveRecord helpers
 require 'osgb/string_conversions'             # add conversion methods to String
 require 'osgb/railtie' if defined? Rails      # add useful methods to ActiveRecord
 
