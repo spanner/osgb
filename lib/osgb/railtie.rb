@@ -9,9 +9,6 @@ module Osgb
           Osgb::Railtie.insert
         end
       end
-      rake_tasks do
-        load "tasks/osgb.rake"
-      end
     end
   end
 
