@@ -12,7 +12,7 @@ module Osgb
   module ClassMethods
     def has_gridref name, options = {}
       include Osgb::InstanceMethods
-      osgb_options = {
+      self.osgb_options = {
         :lat => 'lat',
         :lng => 'lng',
         :gridref => 'gridref',
@@ -30,16 +30,23 @@ module Osgb
     end
     
     def convert_between_gridref_and_latlng
-      cols = self.class.osgb_options
-      if columns.include?(cols[:lat], cols[:lng], cols[:gridref])
-        if send("#{cols[:gridref]}_changed?") || !send("#{cols[:lat]}?") || !send("#{cols[:lng]}?")
-          latlng = gridref.coordinates
-          send("#{cols[:lat]}=", latlng[0])
-          send("#{cols[:lng]}=", latlng[1])
-        elsif send("#{cols[:lat]}_changed?") || send("#{cols[:lng]}_changed?") || !send("#{cols[:gridref]}?")
-          send("#{cols[:gridref]}=", Osgb::Gridref.from(send(cols[:lat]), send(cols[:lng])))
+      options = self.class.osgb_options
+      cols = self.class.column_names
+      if cols.include?(options[:lat]) && cols.include?(options[:lng]) && cols.include?(options[:gridref])
+
+        if send("#{options[:gridref]}_changed?") || !send("#{options[:lat]}?") || !send("#{options[:lng]}?")
+          point = gridref.to_latlng
+          send("#{options[:lat]}=", point.lat)
+          send("#{options[:lng]}=", point.lng)
+          
+        elsif send("#{options[:lat]}_changed?") || send("#{options[:lng]}_changed?") || !send("#{options[:gridref]}?")
+          send("#{options[:gridref]}=", Osgb::Gridref.from(send(options[:lat]), send(options[:lng])))
         end
+        
+      else
+        raise Osgb::OsgbConfigurationError "OSGB was expecting to see #{options[:lat]}, #{options[:lng]} and #{options[:gridref]} columns."
       end
     end
+
   end
 end

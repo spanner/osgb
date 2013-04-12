@@ -1,3 +1,4 @@
+require 'osgb/exceptions'				              # specific error conditions we might want to catch
 require 'osgb/angle_conversions'              # converts degrees to radians and back again
 require 'osgb/ellipsoid'                      # standard approximations to the squashed-circle shape of the earth
 require 'osgb/projection'                     # the geometrical distortions required by a map projection
